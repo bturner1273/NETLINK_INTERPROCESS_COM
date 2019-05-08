@@ -2,6 +2,7 @@
 #include <net/sock.h>
 #include <linux/netlink.h>
 #include <linux/skbuff.h>
+#include <linux/list.h>
 #define NETLINK_USER 31 //port number between userspace and kernel (must be exact match)
 
 struct sock *nl_sk = NULL;
@@ -11,6 +12,12 @@ struct message{
     char type;
     char message[1023];
 };
+
+struct sub_pid_list{
+    int pid;
+    struct list_head list;
+};
+
 //function get called upon receiving any message from userspace
 static void hello_nl_recv_msg(struct sk_buff *skb)
 {
@@ -29,14 +36,14 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     nlh = (struct nlmsghdr *)skb->data; //get data section of the socket buffer (i.e. message from userspace)
     memcpy(&mes, nlmsg_data(nlh),sizeof(struct message));
     if(mes.type==0)
-        {
-            printk(KERN_INFO"HEY: received subscription, message= %s",mes.message);
-        }
-        else
-        {
-            printk(KERN_INFO "HEY: DATA\n");
-            printk(KERN_INFO "HEY: Received publish, message= %s\n",mes.message);
-        }
+    {
+        printk(KERN_INFO"HEY: received subscription, message= %s",mes.message);
+    }
+    else
+    {
+        printk(KERN_INFO "HEY: DATA\n");
+        printk(KERN_INFO "HEY: Received publish, message= %s\n",mes.message);
+    }
     //printk(KERN_INFO "Netlink received msg payload:%s\n", (char *)nlmsg_data(nlh));
     pid = nlh->nlmsg_pid; /*pid of sending process */
 

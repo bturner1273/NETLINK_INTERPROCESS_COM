@@ -1,1 +1,0 @@
-cmd_/home/brad/Desktop/ESE333/project4/example_code/kernel.ko := ld -r -m elf_x86_64 -z max-page-size=0x200000 -T ./scripts/module-common.lds --build-id  -o /home/brad/Desktop/ESE333/project4/example_code/kernel.ko /home/brad/Desktop/ESE333/project4/example_code/kernel.o /home/brad/Desktop/ESE333/project4/example_code/kernel.mod.o ;  true
