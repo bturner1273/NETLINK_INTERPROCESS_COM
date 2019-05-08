@@ -1,0 +1,1 @@
+cmd_/home/brad/Desktop/ESE333/project4/he.ko := ld -r -m elf_x86_64 -z max-page-size=0x200000 -T ./scripts/module-common.lds --build-id  -o /home/brad/Desktop/ESE333/project4/he.ko /home/brad/Desktop/ESE333/project4/he.o /home/brad/Desktop/ESE333/project4/he.mod.o ;  true
