@@ -15,7 +15,7 @@ void main (void) {
     printf("---------");
     printf("\nLOAD LIST\n");
     printf("---------\n\n");
-    struct list_head *pos;
+    struct list_head *pos, *for_freeing;
     struct sub_pid_list pid_list;
     INIT_LIST_HEAD(&pid_list.list);
     struct sub_pid_list *temp;
@@ -25,7 +25,6 @@ void main (void) {
         int to_add = rand()%100;
         printf("TO ADD: %d\n", to_add);
         temp->pid = to_add;
-        printf("TEMP PID: %d\n", temp->pid);
         list_add_tail(&(temp->list), &(pid_list.list));
     }
 
@@ -43,7 +42,20 @@ void main (void) {
 
     printf("\n------------------");
     printf("\nEND LIST TRAVERSAL\n");
-    printf("------------------");
+    printf("------------------\n");
+    printf("\n---------");
+    printf("\nFREE LIST\n");
+    printf("---------\n\n");
 
+    list_for_each_safe(pos, for_freeing, &pid_list.list){
+        temp = list_entry(pos, struct sub_pid_list, list);
+        printf("FREEING ITEM: %d\n", temp->pid);
+        list_del(pos);
+        free(temp);
+    }
+
+    printf("\n-------------");
+    printf("\nEND FREE LIST\n");
+    printf("-------------");
     printf("\n---------------------------------------------------------\n");
 }
