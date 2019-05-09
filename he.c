@@ -45,10 +45,11 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     {
         printk(KERN_INFO"HEY: received subscription, message= %s",mes.message);
         //ADD PID TO LIST
-        temp = (struct sub_pid_list *)malloc(sizeof(struct sub_pid_list));
+        temp = (struct sub_pid_list *)kmalloc(sizeof(struct sub_pid_list), GFP_ATOMIC);
         temp->pid = nlh->nlmsg_pid;
         list_add_tail(&(temp->list), &(pid_list.list));
         //END ADD PID TO LIST
+        printk(KERN_INFO "ADDED PID: %d to kernel linked-list", temp->pid);
     }
     else
     {
@@ -110,7 +111,7 @@ static void __exit hello_exit(void)
         temp = list_entry(pos, struct sub_pid_list, list);
         printk(KERN_INFO "FREEING ITEM: %d\n", temp->pid);
         list_del(pos);
-        free(temp);
+        kfree(temp);
     }
 
 }
