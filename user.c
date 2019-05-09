@@ -65,27 +65,43 @@ void init(){
 
 }
 
-//main function
-int main()
-{
-	init();
-    pthread_create(&thread, NULL, recvthread,NULL);
-
+void publish(){
     struct message mes;
-    printf("Sending message to kernel\n"); //content of first message
-    strcpy(mes.message,"hello");
-    mes.type=0;// type 0 i.e. subscription
+    printf("Type the message you would like to send to the kernel: ");
+    char user_message[1023];
+    gets(user_message);
+    printf("Sending Message: %s to kernel\n", user_message);
+    strcpy(mes.message, user_message);
+    mes.type = 1; //for publish
+    memcpy(NLMSG_DATA(nlh), &mes, sizeof(struct message));
+    sendmsg(sock_fd, &msg, 0);
+}
+
+
+void register_subscriber(){
+    struct message mes;
+    printf("Registering PID with kernel module\n");
+    strcpy(mes.message,"KERNEL_REGISTRATION");
+    mes.type=0;// type 0 i.e. subscription registration
     memcpy(NLMSG_DATA(nlh),&mes,sizeof(struct message));
     sendmsg(sock_fd, &msg, 0);
+}
 
-	strcpy(mes.message,"hello l0l"); //content of second message
-    mes.type=1; // type 1 i.e. publish
-    memcpy(NLMSG_DATA(nlh),&mes,sizeof(struct message));
-    sendmsg(sock_fd, &msg, 0);
-
+void subscribe(){
     printf("Waiting for message from kernel\n");
     /* Read message from kernel */
     recvmsg(sock_fd, &msg, 0);
     printf("Received message payload: %s\n", NLMSG_DATA(nlh));
     close(sock_fd);
+}
+
+//main function
+int main()
+{
+	init();
+    // pthread_create(&thread, NULL, recvthread,NULL);
+    register_subscriber();
+    publish();
+    subscribe();
+
 }

@@ -18,6 +18,12 @@ struct sub_pid_list{
     struct list_head list;
 };
 
+//LIST VARS
+struct list_head *pos, *for_freeing;
+struct sub_pid_list pid_list;
+struct sub_pid_list *temp;
+//END LIST VARS
+
 //function get called upon receiving any message from userspace
 static void hello_nl_recv_msg(struct sk_buff *skb)
 {
@@ -38,6 +44,11 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     if(mes.type==0)
     {
         printk(KERN_INFO"HEY: received subscription, message= %s",mes.message);
+        //ADD PID TO LIST
+        temp = (struct sub_pid_list *)malloc(sizeof(struct sub_pid_list));
+        temp->pid = nlh->nlmsg_pid;
+        list_add_tail(&(temp->list), &(pid_list.list));
+        //END ADD PID TO LIST
     }
     else
     {
@@ -57,9 +68,12 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     NETLINK_CB(skb_out).dst_group = 0; /* not in mcast group */
     strncpy(nlmsg_data(nlh), msg, msg_size);
 
-    res = nlmsg_unicast(nl_sk, skb_out, pid);
-    if (res < 0) {
-        printk(KERN_INFO "Error while sending back to user\n");
+    list_for_each(pos, &pid_list.list){
+        temp = list_entry(pos, struct sub_pid_list, list);
+        res = nlmsg_unicast(nl_sk, skb_out, temp->pid);
+        if (res < 0) {
+            printk(KERN_INFO "Error while sending back to user\n");
+        }
     }
 }
 
@@ -79,6 +93,10 @@ static int __init hello_init(void)
         return -10;
     }
 
+    //LIST INIT
+    INIT_LIST_HEAD(&pid_list.list);
+
+
     return 0;
 }
 //function gets called upon removing module
@@ -86,6 +104,15 @@ static void __exit hello_exit(void)
 {
     printk(KERN_INFO "exiting hello module\n");
     netlink_kernel_release(nl_sk);
+
+    //LIST FREE
+    list_for_each_safe(pos, for_freeing, &pid_list.list){
+        temp = list_entry(pos, struct sub_pid_list, list);
+        printk(KERN_INFO "FREEING ITEM: %d\n", temp->pid);
+        list_del(pos);
+        free(temp);
+    }
+
 }
 
 module_init(hello_init); module_exit(hello_exit);
