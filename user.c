@@ -92,7 +92,14 @@ void subscribe(){
     /* Read message from kernel */
     recvmsg(sock_fd, &msg, 0);
     printf("Received message payload: %s\n", NLMSG_DATA(nlh));
-    close(sock_fd);
+}
+
+char get_pub_sub () {
+    char user_res[10];
+    printf("Subscriber? (y/n): ");
+    gets(user_res);
+    printf("\nUser res: %c\n", user_res[0]);
+    return user_res[0];
 }
 
 //main function
@@ -100,8 +107,15 @@ int main()
 {
 	init();
     // pthread_create(&thread, NULL, recvthread,NULL);
-    register_subscriber();
-    publish();
-    subscribe();
 
+    if (get_pub_sub() == 'y') { //subscriber
+        register_subscriber();
+        while(1)
+            subscribe();
+    }else { //producer
+        while(1)
+            publish();
+    }
+    close(sock_fd);
+    return 0;
 }

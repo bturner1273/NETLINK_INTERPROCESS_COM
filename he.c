@@ -59,18 +59,19 @@ static void hello_nl_recv_msg(struct sk_buff *skb)
     //printk(KERN_INFO "Netlink received msg payload:%s\n", (char *)nlmsg_data(nlh));
     pid = nlh->nlmsg_pid; /*pid of sending process */
 
-    skb_out = nlmsg_new(msg_size, 0);
-    if (!skb_out) {
-        printk(KERN_ERR "Failed to allocate new skb\n");
-        return;
-    }
-
-    nlh = nlmsg_put(skb_out, 0, 0, NLMSG_DONE, msg_size, 0);
-    NETLINK_CB(skb_out).dst_group = 0; /* not in mcast group */
-    strncpy(nlmsg_data(nlh), msg, msg_size);
-
     list_for_each(pos, &pid_list.list){
+        skb_out = nlmsg_new(msg_size, 0);
+        if (!skb_out) {
+            printk(KERN_ERR "Failed to allocate new skb\n");
+            return;
+        }
+
+        nlh = nlmsg_put(skb_out, 0, 0, NLMSG_DONE, msg_size, 0);
+        NETLINK_CB(skb_out).dst_group = 0; /* not in mcast group */
+        strncpy(nlmsg_data(nlh), msg, msg_size);
+
         temp = list_entry(pos, struct sub_pid_list, list);
+        printk(KERN_INFO "PID TO SEND TO: %d", temp->pid);
         res = nlmsg_unicast(nl_sk, skb_out, temp->pid);
         if (res < 0) {
             printk(KERN_INFO "Error while sending back to user\n");
